@@ -7,10 +7,26 @@
 
 import Foundation
 import UIKit
+import CoreData
 
 class CustomCell: UITableViewCell{
     
     var users:[CoreExample] = []
+    
+    var referenceVc: UIViewController?
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
+    lazy var fetchResultContoller: NSFetchedResultsController<CoreExample> = {
+        
+        let request = CoreExample.fetchRequest()
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+
+        let frc = NSFetchedResultsController(fetchRequest: request, managedObjectContext: self.context, sectionNameKeyPath: nil, cacheName: nil)
+        
+        return frc
+    }()
     
     let idLabel: UILabel = {
         let label = UILabel()
@@ -136,13 +152,81 @@ extension CustomCell: UICollectionViewDelegateFlowLayout, UICollectionViewDelega
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        
-        print(users[indexPath.item].name)
+
+        do{
+            try fetchResultContoller.performFetch()
+            let data = users[indexPath.item]
+
+                let sheet = UIAlertController(title: "Edit or Delete", message: nil, preferredStyle: .actionSheet)
+                sheet.addAction(UIAlertAction(title: "Edit", style: .default, handler: { action in
+
+                    let ac = UIAlertController(title: (data.name)!, message: nil, preferredStyle: .alert)
+
+                    ac.addTextField { textField in
+                        textField.text = (data.name)!
+                    }
+
+                    ac.addAction(UIAlertAction(title: "Change", style: .default, handler: { action in
+
+                        let text = ac.textFields?.first?.text!
+
+                        data.name = text
+                        (self.referenceVc as! ViewController).saveCoreData()
+                        
+                    }))
+
+                    ac.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+
+//                    ViewController.presentViewController(ac, animated: true)
+                    self.referenceVc!.present(ac, animated: true)
+                }))
+
+                sheet.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { action in
+
+                    let ac = UIAlertController(title: "Delete \((data.name)!)?", message: nil, preferredStyle: .alert)
+                    ac.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [self] action in
+
+                       let item = self.users[indexPath.item]
+
+                        users.remove(at: indexPath.item)
+                            self.context.delete(item)
+                            (referenceVc as! ViewController).saveCoreData()
+                        (referenceVc as! ViewController).tableView.reloadData()
+                        (referenceVc as! ViewController).getCoreData()
+                        self.collectionView.reloadData()
+
+                    }))
+
+                    ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                    self.referenceVc!.present(ac,animated: true)
+                }))
+
+                sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            self.referenceVc!.present(sheet, animated: true)
+
+
+        }catch {
+
+        }
+
     }
     
     func reloadData(){
         collectionView.reloadData()
     }
     
+    func saveCoreData(){
+         if context.hasChanges{
+             do{
+                 try context.save()
+                
+             }catch let saveError{
+                 //error while saving in coreData
+                 print("Not saved in coreData",saveError)
+                
+             }
+         }
+         
+     }
 }
 

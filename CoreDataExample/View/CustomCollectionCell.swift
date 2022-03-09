@@ -31,7 +31,7 @@ class CustomCollectionCell: UICollectionViewCell {
     let dateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .systemBlue
+        label.textColor = .white
         label.text = "Name"
 //        label.font = UIFont.boldSystemFont(ofSize: 15)
         return label
@@ -41,7 +41,7 @@ class CustomCollectionCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.backgroundColor = .systemOrange
+        contentView.backgroundColor = .systemCyan
         applyConstraints()
     }
     

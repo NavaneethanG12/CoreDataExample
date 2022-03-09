@@ -67,6 +67,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         navigationItem.title = "CoreData"
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addUsers))
+        
+        
 //        createUsers()
         getCoreData()
         print(sectionTitle)
@@ -179,7 +181,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     
-    func saveCoreData(){
+   func saveCoreData(){
         if context.hasChanges{
             do{
                 try context.save()
@@ -246,7 +248,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 //        let cell = UITableViewCell(style: .value1, reuseIdentifier: cellReuseID)
         getCoreData()
         let cell = tableView.dequeueReusableCell(withIdentifier: customCellReuseId, for: indexPath) as! CustomCell
+        
         cell.users = (userDict[sectionTitle[indexPath.section]])!
+        cell.referenceVc = self
         cell.reloadData()
 //       if let user = userDict[sectionTitle[indexPath.section]]?[indexPath.row]
 //        {
@@ -345,6 +349,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
           
     }
+    
+   
+//    class func presentViewController(_ vc: UIViewController, animated: Bool){
+//        self.present(vc, animated: true)
+//    }
     
 }
 
