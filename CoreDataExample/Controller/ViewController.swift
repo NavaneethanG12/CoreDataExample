@@ -9,7 +9,19 @@ import UIKit
 import CoreData
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-     
+    
+    
+    
+    var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.sectionInset = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
+        layout.scrollDirection = .horizontal
+        let collection = UICollectionView(frame: .zero,
+                                          collectionViewLayout: layout)
+        
+        return collection
+    }()
+    
     let tableView = UITableView()
     
     let cellReuseID = "cellReuseID"
@@ -37,8 +49,34 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         super.viewDidLoad()
         
         view.addSubview(tableView)
+//        view.addSubview(collectionView)
+//        collectionView.delegate = self
+//        collectionView.dataSource = self
+        
         tableView.delegate = self
         tableView.dataSource = self
+        
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellReuseID)
+        tableView.register(CustomCell.self, forCellReuseIdentifier: customCellReuseId)
+        
+        collectionView.register(CustomCollectionCell.self, forCellWithReuseIdentifier: CustomCollectionCell.cellReuseIdendifier)
+        
+//        layoutCollectionView()
+        layoutTableView()
+        
+        navigationItem.title = "CoreData"
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addUsers))
+//        createUsers()
+        getCoreData()
+        print(sectionTitle)
+        
+        
+//        print(datas[0].name)
+        
+    }
+    
+    func layoutTableView(){
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -47,21 +85,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
-        
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellReuseID)
-        
-        tableView.register(CustomCell.self, forCellReuseIdentifier: customCellReuseId)
-        
-        navigationItem.title = "CoreData"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addUsers))
-//        createUsers()
-        getCoreData()
-        print(sectionTitle)
-//        print(datas[0].name)
-        
     }
     
+    func layoutCollectionView(){
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+//            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            collectionView.heightAnchor.constraint(equalToConstant: 250),
+            collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+        ])
+    }
 // getting coredata using core data class
     
     func getCoreData(){
@@ -150,6 +186,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 try fetchResultContoller.performFetch()
                 getCoreData()
                 print(fetchResultContoller.fetchedObjects?.count)
+                
                 self.tableView.reloadData()
             }catch let saveError{
                 //error while saving in coreData
@@ -198,7 +235,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         getCoreData()
-        return userDict[sectionTitle[section]]?.count ?? 0
+        return 1
+//        return userDict[sectionTitle[section]]?.count ?? 0
         
         //return 0
     }
@@ -206,16 +244,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
 //        let cell = UITableViewCell(style: .value1, reuseIdentifier: cellReuseID)
+        getCoreData()
         let cell = tableView.dequeueReusableCell(withIdentifier: customCellReuseId, for: indexPath) as! CustomCell
-        
-       if let user = userDict[sectionTitle[indexPath.section]]?[indexPath.row]
-        {
-           cell.nameLabel.text = user.name
-           cell.idLabel.text = "ID: \(user.rollNumber)"
-           cell.dateLabel.text = (user.createdAt?.formatted(date: .numeric, time: .shortened))!
-//            cell.textLabel?.text = "\(user.name!)"
-//           cell.detailTextLabel?.text = "Created on: \((user.createdAt?.formatted(date: .numeric, time: .shortened))!)"
-       }
+        cell.users = (userDict[sectionTitle[indexPath.section]])!
+        cell.reloadData()
+//       if let user = userDict[sectionTitle[indexPath.section]]?[indexPath.row]
+//        {
+//           cell.nameLabel.text = user.name
+//           cell.idLabel.text = "ID: \(user.rollNumber)"
+//           cell.dateLabel.text = (user.createdAt?.formatted(date: .numeric, time: .shortened))!
+////            cell.textLabel?.text = "\(user.name!)"
+////           cell.detailTextLabel?.text = "Created on: \((user.createdAt?.formatted(date: .numeric, time: .shortened))!)"
+//       }
         return cell
         
     }
@@ -246,7 +286,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 75
+        return 250
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -303,12 +343,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }catch {
             
         }
-        
-        
-        
-        
-        
+          
     }
     
 }
+
+//MARK: - UICollectionView
 
